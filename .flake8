@@ -1,5 +1,0 @@
-[flake8]
-count=True
-statistics=True
-filename = *.py, *.pyx
-max-line-length = 120
