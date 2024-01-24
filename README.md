@@ -4,7 +4,7 @@ NetSquid-QSwitch (1.1.1)
 Description
 -----------
 
-This is an extended version from the orginal a user contributed [_snippet_](https://gitlab.com/softwarequtech/netsquid-snippets/netsquid-qrepchain) for the [NetSquid quantum network simulator](https://netsquid.org) and contains tool for simulating a quantum switch.
+This is an extended version of the orginal user contributed [_snippet_](https://gitlab.com/softwarequtech/netsquid-snippets/netsquid-qrepchain) for the [NetSquid quantum network simulator](https://netsquid.org) and contains tool for simulating a quantum switch.
 
 The quantum switch node is located as center node in a star topology network. The leaf nodes continuously generate EPR pairs with the switch node, which performs a local operation to convert these into multipartite entangled states, shared by the leaf nodes. With tools from this snippet, one can obtain the capacity (the number of multipartite states produced) and the average quality (fidelity) of the produced multipartite states.
 
