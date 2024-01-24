@@ -28,8 +28,8 @@ Starting to use this snippet is most easily done by (adjusting) any of the scrip
 Contributors
 ------------
 
-Tim Coopmans (t.j.coopmans[at]tudelft.nl)
-Luise Prielinger (l.p.prielinger[at]tudelft.nl)
+* Tim Coopmans (t.j.coopmans[at]tudelft.nl)
+* Luise Prielinger (l.p.prielinger[at]tudelft.nl)
 
 License
 -------

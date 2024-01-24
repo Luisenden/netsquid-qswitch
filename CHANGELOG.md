@@ -9,7 +9,7 @@ CHANGELOG
 
 2023-12-12 (1.1.0)
 ------------------
-- fixed sorting of leaf nodes: sort by node.name previously sorted up to 9 nodes correctly, but for n > 9 this results in '0','1', '10', '2', etc., which is why the simulation could not be executed for more than 10 nodes.
+- fixed sorting of leaf nodes: sort by node.name previously sorted up to 9 nodes correctly, but for n > 9 this results in '0','1', '10', '2', etc., which is why the simulation could not be executed for more than 10 nodes
 - added option to define buffer size individually per node 
 - included extraction of leaf nodes involved in produced GHZ states
 
