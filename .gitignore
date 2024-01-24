@@ -10,3 +10,5 @@ dist/
 *.idea
 htmlcov/
 .coverage
+.flake8
+.gitlab-ci.yml
