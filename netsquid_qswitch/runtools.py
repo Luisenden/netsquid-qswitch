@@ -41,9 +41,10 @@ from netsquid_qswitch.protocols import DATA_PROTOCOL_NAME, SWITCH_NODE_NAME, LEA
 Scenario = namedtuple('Scenario',
                       ['total_runtime_in_seconds',
                        'connect_size',
-                       'rates',
+                       'server_node_name',
                        'num_positions',
                        'buffer_size',
+                       'probabilities',
                        'T2',
                        'decoherence_rate',
                        'include_classical_comm'])
@@ -92,13 +93,14 @@ class Simulation:
         in `scenario`
     """
 
-    def __init__(self, scenario, distances="default"):
+    def __init__(self, scenario, distances="default", repetition_times=10**-3):
 
         self._has_run = False
-        ns.set_qstate_formalism(ns.QFormalism.KET)
+        ns.set_qstate_formalism(ns.QFormalism.DM)
 
         self._scenario = scenario
         self._set_distances(distances=distances)
+        self._set_repetition_times(repetition_times=repetition_times)
 
         self._network = self._get_network()
 
@@ -138,18 +140,28 @@ class Simulation:
         else:
             self._distances = distances
 
+    def _set_repetition_times(self, repetition_times):
+        if type(repetition_times) == int:
+            self._repetition_times = repetition_times * len(self._distances)
+        else:
+            self._repetition_times = repetition_times
+
+
     def _get_network(self):
-        number_of_leaves = len(self._scenario.rates)
+        number_of_leaves = len(self._distances)
 
         timing_models = \
-            [ExponentialDelayModel(rate=vardoyan_distance_to_rate(distance))
-             for distance in self._distances]
+            [ExponentialDelayModel(rate=vardoyan_distance_to_rate(distance=distance, attempt_duration=attempt_duration))
+             for distance, attempt_duration in zip(self._distances, self._repetition_times)]
+
+
 
         network = setup_network(
             number_of_leaves=number_of_leaves,
             distances_from_centre=self._distances,
             single_hop_state=ks.b00,
             single_hop_timing_models=timing_models,
+            probabilities=self._scenario.probabilities,
             num_positions=self._scenario.num_positions,
             T2=self._scenario.T2 * 10 ** 9)  # T2 should also be given in seconds
 
@@ -176,6 +188,7 @@ class Simulation:
                                    connect_size=self._scenario.connect_size,
                                    num_positions=self._scenario.num_positions,
                                    buffer_size=self._scenario.buffer_size,
+                                   server_node_name=self._scenario.server_node_name,
                                    max_channel_delay=max_channel_delay,
                                    decoherence_rate=self._scenario.decoherence_rate * 10 ** (-9))
         return protocol
@@ -245,7 +258,6 @@ def _convert_scenario_to_dict(scenario):
     return {
         "total_runtime_in_seconds": scenario.total_runtime_in_seconds,
         "connect_size": scenario.connect_size,
-        "rates": scenario.rates,
         "num_positions": scenario.num_positions,
         "buffer_size": scenario.buffer_size,
         "T2": scenario.T2,
@@ -342,6 +354,8 @@ def simulate_scenarios_and_aggregate_results_as_pickle(scenarios, number_of_runs
 
         data["mean_fidelity"] = np.mean(mean_fidelities)
         data["mean_capacity"] = np.mean(capacities)
+        data["nnodes"] = len(scenario.buffer_size)
+
         data = {**data, **mean_states_per_node}
         print(f'scenario {i}/{len(scenarios)} done')
         df = df.append(data, ignore_index=True)

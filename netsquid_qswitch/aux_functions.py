@@ -94,7 +94,7 @@ VARDOYAN_ATTEMPT_DURATION = 10 ** (-9)  # [s], called 'tau'
 VARDOYAN_LOSS_PARAMETER = 0.1  # called 'c' on p. 10 of paper
 
 
-def vardoyan_distance_to_rate(distance):
+def vardoyan_distance_to_rate(distance, attempt_duration):
     """Computes the entanglement generation rate over a given distance
     of glass fibre. Follows the numbers used by Vardoyan et al.,
     "On the stochastic analysis of quantum entanglement switch ",
@@ -118,7 +118,7 @@ def vardoyan_distance_to_rate(distance):
     return distance_to_rate(distance=distance,
                             loss_parameter=VARDOYAN_LOSS_PARAMETER,
                             loss_coefficient=VARDOYAN_LOSS_COEFFICIENT,
-                            attempt_duration=VARDOYAN_ATTEMPT_DURATION)
+                            attempt_duration=attempt_duration * 10 ** -6)
 
 
 def vardoyan_rate_to_distance(rate):

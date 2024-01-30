@@ -97,7 +97,7 @@ class MeasureProgram(QuantumProgram):
         :obj:`netsquid.components.instructions.Instruction`
         """
         if self._measure_instruction is None:
-            raise ValueError("No measure instruction provded")
+            raise ValueError("No measure instruction provided")
         return self._measure_instruction
 
     @measure_instruction.setter

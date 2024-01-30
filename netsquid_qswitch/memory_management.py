@@ -91,7 +91,8 @@ class MemoryManager:
     decoherence_rate : float
     """
 
-    def __init__(self, num_positions, decoherence_rate=0):
+    def __init__(self, node_name, num_positions, decoherence_rate=0):
+        self._node_name = node_name
         self._num_positions = num_positions
         if decoherence_rate < 0:
             raise ValueError("Decoherence rate cannot be negative")
@@ -116,6 +117,7 @@ class MemoryManager:
         ret = set()
         for __, info in self._mem_pos2info.items():
             ret.add(info.remote_node_name)
+
         return ret
 
     def add_fresh_link(self, mem_pos, remote_node_name, fresh_link_ID):
@@ -166,6 +168,7 @@ class MemoryManager:
                     generation_time_stamp=ns.sim_time(),
                     timeout=timeout)
         self._mem_pos2info[mem_pos] = link
+
         return link
 
     def apply_timeout(self):
@@ -287,11 +290,12 @@ class MemoryManager:
         """sort by OLEF-rule (Oldest Link Entanglement First)"""
         return tuple_of_mem_pos_and_info[1].generation_time_stamp
 
-    def get_connectable_positions(self, number_of_qubits):
+    def get_connectable_positions(self, number_of_qubits, server_node_name=None):
         """
         Check whether a `Connect` operation is possible, where the
         number of qubits that the `Connect` operation acts upon is
-        given by `number_of_qubits`.
+        given by `number_of_qubits`. Specifying a server_node yields a group of oldest links
+        only if the server_node_name is among them.
 
         Parameters
         ----------
@@ -320,9 +324,21 @@ class MemoryManager:
             if oldest is not None:
                 oldest_links.append(oldest)
         oldest_links.sort(key=MemoryManager._sort_by_OLEF)
+    
         if len(oldest_links) < number_of_qubits:
             return None
-        return [x[0] for x in oldest_links[0:number_of_qubits]]
+        
+        if server_node_name == None:
+            return [x[0] for x in oldest_links[0:number_of_qubits]]
+        
+        node_names = [oldest_link[1].remote_node_name for oldest_link in oldest_links]
+        if server_node_name in node_names:
+            index_server = node_names.index(server_node_name)
+            server_link = oldest_links[index_server]
+            positions = [server_link[0]] + [x[0] for i,x in enumerate(oldest_links) if i != index_server][:number_of_qubits-1]
+            return positions
+        
+        return None
 
     def positions_to_discard_following_buffer_by_remote_node_name(self, remote_node_name, buffer_size):
         """Checks whether more than `buffer_size` links are present,

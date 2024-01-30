@@ -1,4 +1,5 @@
 """Physical components of the switch network and tools for setting them up."""
+import numpy as np
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
@@ -8,6 +9,8 @@ from netsquid.components.instructions import (
 from netsquid.components.models.qerrormodels import T1T2NoiseModel
 from netsquid.components.models import DelayModel
 from netsquid.qubits.state_sampler import StateSampler
+from netsquid.qubits import ket2dm
+
 
 # naming conventions
 SWITCH_NODE_NAME = "switch_node"
@@ -15,7 +18,7 @@ LEAF_NODE_BASENAME = "leaf_node_"  # leaf nodes have names X1, X2, etc where X=L
 
 
 def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
-                        single_hop_timing_model):
+                        single_hop_timing_model, probability):
     """
     A quantum connection between the switch node and a leaf node.
     The connection continuously produces entangled pairs of qubits
@@ -45,8 +48,8 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
     """
 
     # quantum connection
-    state_sampler = StateSampler(qs_reprs=[single_hop_state],
-                                 probabilities=[1])
+    state_sampler = StateSampler(qs_reprs=[ket2dm(single_hop_state), np.eye(4)/4],
+                                 probabilities=[probability, 1-probability])
 
     qsource = QSource("qsource{}".format(leaf_node_name),
                       state_sampler=state_sampler,
@@ -120,7 +123,7 @@ def _create_quantumprocessor(name, num_positions, T2):
 
 
 def setup_network(number_of_leaves, distances_from_centre,
-                  single_hop_state, single_hop_timing_models,
+                  single_hop_state, single_hop_timing_models, probabilities,
                   num_positions, T2):
     """
     Constructs a star topology network of a single centre node (the switch) and
@@ -159,7 +162,8 @@ def setup_network(number_of_leaves, distances_from_centre,
             leaf_node_name=str(leaf_ix),
             distance_from_centre=distances_from_centre[leaf_ix],
             single_hop_state=single_hop_state,
-            single_hop_timing_model=single_hop_timing_models[leaf_ix])
+            single_hop_timing_model=single_hop_timing_models[leaf_ix],
+            probability=probabilities[leaf_ix])
 
         network.add_subcomponent(qconnection)
 
