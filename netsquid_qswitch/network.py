@@ -1,15 +1,15 @@
 """Physical components of the switch network and tools for setting them up."""
-import numpy as np
+import scipy.constants as ct
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
 from netsquid.components.instructions import (
     INSTR_MEASURE, INSTR_MEASURE_X, INSTR_SWAP, INSTR_CNOT, INSTR_H,
     INSTR_MEASURE_BELL)
-from netsquid.components.models.qerrormodels import T1T2NoiseModel
+from netsquid.components.models.qerrormodels import T1T2NoiseModel, DepolarNoiseModel
+from netsquid.components.models.delaymodels import FibreDelayModel
 from netsquid.components.models import DelayModel
 from netsquid.qubits.state_sampler import StateSampler
-from netsquid.qubits import ket2dm
 
 
 # naming conventions
@@ -18,7 +18,7 @@ LEAF_NODE_BASENAME = "leaf_node_"  # leaf nodes have names X1, X2, etc where X=L
 
 
 def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
-                        single_hop_timing_model, probability):
+                        single_hop_timing_model, bright_state_population):
     """
     A quantum connection between the switch node and a leaf node.
     The connection continuously produces entangled pairs of qubits
@@ -48,8 +48,8 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
     """
 
     # quantum connection
-    state_sampler = StateSampler(qs_reprs=[ket2dm(single_hop_state), np.eye(4)/4],
-                                 probabilities=[probability, 1-probability])
+    state_sampler = StateSampler(qs_reprs=[single_hop_state],
+                                 probabilities=[1])
 
     qsource = QSource("qsource{}".format(leaf_node_name),
                       state_sampler=state_sampler,
@@ -64,13 +64,13 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
     qchannel_M2leaf = QuantumChannel(
         name="qchannel_M2leaf{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
-        models={"delay_model": None,
-                "quantum_noise_model": None})
+        models={"delay_model": None, #
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.2)})
     qchannel_M2switch = QuantumChannel(
         name="qchannel_M2switch{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": None})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.00)})
 
     # classical_connection
     cchannel = ClassicalFibre("cchannel2leaf{}".format(leaf_node_name),
@@ -123,7 +123,7 @@ def _create_quantumprocessor(name, num_positions, T2):
 
 
 def setup_network(number_of_leaves, distances_from_centre,
-                  single_hop_state, single_hop_timing_models, probabilities,
+                  single_hop_state, single_hop_timing_models, bright_state_population,
                   num_positions, T2):
     """
     Constructs a star topology network of a single centre node (the switch) and
@@ -163,7 +163,7 @@ def setup_network(number_of_leaves, distances_from_centre,
             distance_from_centre=distances_from_centre[leaf_ix],
             single_hop_state=single_hop_state,
             single_hop_timing_model=single_hop_timing_models[leaf_ix],
-            probability=probabilities[leaf_ix])
+            bright_state_population=bright_state_population[leaf_ix])
 
         network.add_subcomponent(qconnection)
 

@@ -334,6 +334,7 @@ class SwitchProtocol(StarNodeProtocol):
             # of 'move' and 'connect' operations below. As a consequence, the other
             # ports which fired are now forgotten and when this while-loop will start
             # again, the 'yield arrival_event_expression' will not trigger again...
+            #self._add_new_links_to_memory_manager_by_triggered_ports(arrival_event_expression)
 
             for operation in self._operations_after_new_link_arrival():
                 yield operation
@@ -370,6 +371,12 @@ class SwitchProtocol(StarNodeProtocol):
                         if self.node.qmemory.mem_positions[leaf_index].in_use]
         for leaf_index in leaf_indices:
             self._add_new_link_to_memory_manager(leaf_index)
+
+    def _add_new_links_to_memory_manager_by_triggered_ports(self, arrival_event_expression):
+        leaf_node_names = [event.source.component.name for event in arrival_event_expression.triggered_events]
+        for leaf_name, leaf_index in zip(leaf_node_names, range(len(leaf_node_names))):
+                self._add_fresh_link(remote_node_name=leaf_name,
+                             mem_pos=leaf_index)
 
     def _add_new_link_to_memory_manager(self, leaf_index):
         leaf_name = self._leaf_nodes[leaf_index].name
@@ -466,10 +473,11 @@ class DataCollectProtocol(NodeProtocol):
                 qubit = leaf_protocol.node.qmemory.peek(pos)
             qubits.append(qubit[0])
 
-            if memorymanager._mem_pos2info != None:
-                positions_beyond_buffer = [pos for pos in memorymanager._mem_pos2info if pos > leaf_protocol._buffer_size]
-            for pos in positions_beyond_buffer:
-                memorymanager.remove_link(pos)
+            #print(self._switch_protocol._buffer_size)
+            # if memorymanager._mem_pos2info != None:
+            #     positions_beyond_buffer = [pos for pos in memorymanager._mem_pos2info if pos > self._switch_protocol._buffer_size]
+            # for pos in positions_beyond_buffer:
+            #     memorymanager.remove_link(pos)
 
         # apply correction operators
         for ix, qubit in enumerate(qubits):
@@ -530,7 +538,7 @@ def setup_protocols(network, connect_size, num_positions,
     switch_protocol = SwitchProtocol(node=switch_node,
                                      name=SWITCH_PROTOCOL_NAME,
                                      leaf_nodes=leaf_nodes,
-                                     buffer_size=sum(buffer_size) if type(buffer_size) == list else buffer_size,
+                                     buffer_size=sum(buffer_size) if type(buffer_size) == list else buffer_size * len(leaf_nodes),
                                      connect_size=connect_size,
                                      server_node_name=server_node_name)
 

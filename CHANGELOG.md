@@ -6,6 +6,9 @@ CHANGELOG
 - added function `simulate_scenarios_and_aggregate_results_as_pickle` to runtools
 - added `example_capacity_vs_buffersize.py` to examples
 - added `plot_impacts_capacity_vs_buffer.py` to examples
+- added server_node to specify a server which is always part of the produced GHZ state
+- added depolarizing noise model to the quantum fiber
+- added dependence of bright space population to rates and depolarizing channel
 
 2023-12-12 (1.1.0)
 ------------------

@@ -33,7 +33,7 @@ import netsquid as ns
 from netsquid.nodes import Connection, Node
 from netsquid.components import ClassicalFibre
 from netsquid.qubits import ketstates as ks
-from netsquid_qswitch.aux_functions import vardoyan_rate_to_distance, vardoyan_distance_to_rate
+from netsquid_qswitch.aux_functions import distance_to_rate, vardoyan_rate_to_distance
 from netsquid_qswitch.network import ExponentialDelayModel, setup_network
 from netsquid_qswitch.protocols import DATA_PROTOCOL_NAME, SWITCH_NODE_NAME, LEAF_NODE_BASENAME, setup_protocols
 
@@ -44,8 +44,10 @@ Scenario = namedtuple('Scenario',
                        'server_node_name',
                        'num_positions',
                        'buffer_size',
-                       'probabilities',
+                       'bright_state_population',
                        'T2',
+                       'eta',
+                       'loss',
                        'decoherence_rate',
                        'include_classical_comm'])
 
@@ -93,10 +95,10 @@ class Simulation:
         in `scenario`
     """
 
-    def __init__(self, scenario, distances="default", repetition_times=10**-3):
+    def __init__(self, scenario, distances="default", repetition_times=1 * 10 ** 9):
 
         self._has_run = False
-        ns.set_qstate_formalism(ns.QFormalism.DM)
+        ns.set_qstate_formalism(ns.QFormalism.KET)
 
         self._scenario = scenario
         self._set_distances(distances=distances)
@@ -150,9 +152,10 @@ class Simulation:
     def _get_network(self):
         number_of_leaves = len(self._distances)
 
+        rates = [alpha*distance_to_rate(distance=distance, loss_coefficient=self._scenario.eta, loss_parameter=self._scenario.loss, attempt_duration=T) 
+                 for alpha, T, distance in zip(self._scenario.bright_state_population, self._repetition_times, self._distances)]
         timing_models = \
-            [ExponentialDelayModel(rate=vardoyan_distance_to_rate(distance=distance, attempt_duration=attempt_duration))
-             for distance, attempt_duration in zip(self._distances, self._repetition_times)]
+            [ExponentialDelayModel(rate=rate) for rate in rates]
 
 
 
@@ -161,7 +164,7 @@ class Simulation:
             distances_from_centre=self._distances,
             single_hop_state=ks.b00,
             single_hop_timing_models=timing_models,
-            probabilities=self._scenario.probabilities,
+            bright_state_population=self._scenario.bright_state_population,
             num_positions=self._scenario.num_positions,
             T2=self._scenario.T2 * 10 ** 9)  # T2 should also be given in seconds
 

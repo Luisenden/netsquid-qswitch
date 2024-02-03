@@ -27,11 +27,11 @@ def distance_to_rate(distance, loss_parameter, loss_coefficient,
     Returns
     -------
     float
-        Delay [ns]
+        Entanglement generation rate [1/s]
     """
-    transmissivity = 10 ** (-1 * loss_coefficient * distance / 10)
+    transmissivity = 10 ** (-0.1 * loss_coefficient * distance)
     # transmissivity is the 'eta' in vardoyan et al.
-    return (loss_parameter * transmissivity) / attempt_duration
+    return (2 * loss_parameter * transmissivity) / attempt_duration
 
 
 def rate_to_distance(rate, loss_parameter, loss_coefficient,
@@ -118,7 +118,7 @@ def vardoyan_distance_to_rate(distance, attempt_duration):
     return distance_to_rate(distance=distance,
                             loss_parameter=VARDOYAN_LOSS_PARAMETER,
                             loss_coefficient=VARDOYAN_LOSS_COEFFICIENT,
-                            attempt_duration=attempt_duration * 10 ** -6)
+                            attempt_duration=attempt_duration)
 
 
 def vardoyan_rate_to_distance(rate):
