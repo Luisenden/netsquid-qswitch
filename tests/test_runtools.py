@@ -46,7 +46,7 @@ class TestSimulation(unittest.TestCase):
                             connect_size=connect_size,
                             server_node_name='leaf_node_0',
                             bright_state_population=[0.4]*number_of_leaves,
-                            eta=0.1,
+                            beta=0.1,
                             loss=1,
                             num_positions=1000,
                             buffer_size=np.inf,
