@@ -45,7 +45,7 @@ Scenario = namedtuple('Scenario',
                        'buffer_size',
                        'bright_state_population',
                        'T2',
-                       'eta',
+                       'beta',
                        'loss',
                        'decoherence_rate',
                        'include_classical_comm'])
@@ -146,7 +146,7 @@ class Simulation:
     def _get_network(self):
         number_of_leaves = len(self._distances)
 
-        rates = [alpha*distance_to_rate(distance=distance, loss_coefficient=self._scenario.eta,
+        rates = [alpha*distance_to_rate(distance=distance, loss_coefficient=self._scenario.beta,
                                         loss_parameter=self._scenario.loss, attempt_duration=T)
                  for alpha, T, distance in zip(self._scenario.bright_state_population,
                                                self._repetition_times, self._distances)]
