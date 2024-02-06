@@ -65,12 +65,12 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
         name="qchannel_M2leaf{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None, #
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.2)})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.2)})
     qchannel_M2switch = QuantumChannel(
         name="qchannel_M2switch{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.00)})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.00)})
 
     # classical_connection
     cchannel = ClassicalFibre("cchannel2leaf{}".format(leaf_node_name),
@@ -114,6 +114,7 @@ def _create_quantumprocessor(name, num_positions, T2):
         PhysicalInstruction(INSTR_MEASURE_BELL, duration=0,
                             q_noise_model=None)
     ]
+
     qprocessor = QuantumProcessor(name=name,
                                   num_positions=num_positions,
                                   fallback_to_nonphysical=False,

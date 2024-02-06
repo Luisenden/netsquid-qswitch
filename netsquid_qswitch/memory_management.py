@@ -403,6 +403,6 @@ class MemoryManager:
         free_positions = [mem_pos for mem_pos in possible_mem_pos
                           if mem_pos not in self._mem_pos2info]
         if len(free_positions) < number_of_positions:
-            raise Exception("No more free memory positions available")
+            raise Exception(f"No more free memory positions available at node {self._node_name}.")
         else:
             return free_positions[:number_of_positions]

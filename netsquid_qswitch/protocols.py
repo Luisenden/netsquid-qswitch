@@ -104,8 +104,6 @@ class StarNodeProtocol(abc.ABC, NodeProtocol):
         self._memorymanager.move_link(old_position, new_position)
         self.node.qmemory.execute_program(self._move_program,
                                           qubit_mapping=qubit_mapping)
-        # if new_position > 10:
-        #     self._memorymanager.remove_link(new_position)
         return ns.EventExpression(
             source=self.node.qmemory,
             event_type=self.node.qmemory.evtype_program_done)
@@ -124,6 +122,7 @@ class StarNodeProtocol(abc.ABC, NodeProtocol):
             raise Exception
         for mem_pos in positions:
             self._memorymanager.remove_link(mem_pos)
+
         #print(self.memorymanager._node_name, self._memorymanager._mem_pos2info)
         self.node.qmemory.execute_program(self._connect_program,
                                           qubit_mapping=positions)
@@ -153,8 +152,11 @@ class StarNodeProtocol(abc.ABC, NodeProtocol):
         list of (int, int)
             List of (position-before-move, intended-position-after-move)
         """
+
+        
         moving_positions = [mem_pos for mem_pos in self._reserved_positions
                             if mem_pos in self._memorymanager.positions_in_use]
+        
         ret = []
 
         possible_target_positions = self._not_reserved_positions
@@ -200,7 +202,14 @@ class StarNodeProtocol(abc.ABC, NodeProtocol):
         self._memorymanager.remove_link(mem_pos=pos)
         #print('swtich node?', self._memorymanager._mem_pos2info)
         outcome = self._measure_program.output[self._measure_program.OUTCOME_KEY]
+        self.node.qmemory.pop(pos)
         return outcome
+    
+    def _get_leaf_protocol_by_node_name(self, node_name):
+        for leaf_protocol in self._leaf_protocols:
+            if leaf_protocol.node.name == node_name:
+                return leaf_protocol
+        raise ValueError
 
     def _apply_buffer(self):
         # to be overridden
@@ -214,7 +223,7 @@ class LeafProtocol(StarNodeProtocol):
     """
     MEASURE_DIRECTLY = False
 
-    def __init__(self, node, name, buffer_size):
+    def __init__(self, node, name, buffer_size, switch_node):
         """
         Parameters
         ----------
@@ -226,6 +235,7 @@ class LeafProtocol(StarNodeProtocol):
         """
         super().__init__(node=node, name=name)
         self._buffer_size = buffer_size
+        self._switch_node = switch_node
 
     def run(self):
         """Loops over the following events:
@@ -257,6 +267,7 @@ class LeafProtocol(StarNodeProtocol):
         self._add_fresh_link(remote_node_name=SWITCH_NODE_NAME,
                              mem_pos=0)
 
+
     def _set_reserved_positions(self):
         self._reserved_positions = [0]
 
@@ -270,7 +281,7 @@ class SwitchProtocol(StarNodeProtocol):
     """
     FINCONN_SIGN_LABEL = "FINISHED_CONNECT"
 
-    def __init__(self, node, name, leaf_nodes, buffer_size, connect_size=2, server_node_name=None):
+    def __init__(self, node, name, leaf_nodes, buffer_size, leaf_protocols, connect_size=2, server_node_name=None):
         """
         Parameters
         ----------
@@ -287,6 +298,7 @@ class SwitchProtocol(StarNodeProtocol):
         self._buffer_size = buffer_size
         self._leaf_nodes = leaf_nodes
         self._server_node_name = server_node_name
+        self._leaf_protocols = leaf_protocols
         super().__init__(node=node, name=name)
 
         self._connect_program = switch_qprog.create_quantum_circuit_for_connect(connect_size)
@@ -315,7 +327,7 @@ class SwitchProtocol(StarNodeProtocol):
            all of these qubits to move them to a free position that is not
            a reserved position.
         3. check if a `Connect` operation can be performed. If so, then perform
-           the operation and start again at step 3. If not, go back to step 1.
+           the operation and start again at step 2. If not, go back to step 1.
         """
         for port in self.node.qmemory.ports.values():
             port.notify_all_input = True
@@ -353,6 +365,7 @@ class SwitchProtocol(StarNodeProtocol):
 
         # perform all possible 'connect' operations
         linkgroups = []
+
         while self._can_perform_connect():
             positions = self._get_connectable_positions()
             links = [self._memorymanager.get_link(pos) for pos in positions]
@@ -393,18 +406,29 @@ class SwitchProtocol(StarNodeProtocol):
         return self.node.qmemory == qprocessor and "qin{}".format(leaf_index) in port.name
 
     def _apply_buffer(self):
-        for leaf_name in [node.name for node in self._leaf_nodes]:
-            self._apply_buffer_with_leaf_by_name(leaf_name=leaf_name)
+        for leaf_node in [node for node in self._leaf_nodes]:
+            self._apply_buffer_with_leaf_by_name(leaf_node=leaf_node)
 
-    def _apply_buffer_with_leaf_by_name(self, leaf_name):
+    def _apply_buffer_with_leaf_by_name(self, leaf_node):
 
-        positions_to_discard = \
+        positions_to_discard_in_switch_manager = \
             self._memorymanager.positions_to_discard_following_buffer_by_remote_node_name(
-                remote_node_name=leaf_name,
-                buffer_size=self._buffer_size)
-        for pos in positions_to_discard:
+                remote_node_name=leaf_node.name,
+                buffer_size=self._buffer_size[leaf_node.name])
+        for pos in positions_to_discard_in_switch_manager:
             self._memorymanager.remove_link(mem_pos=pos)
             self.node.qmemory.pop(pos)
+
+        leaf_protocol = self._get_leaf_protocol_by_node_name(leaf_node.name)
+        positions_to_discard_in_leaf_manager = \
+            leaf_protocol.memorymanager.positions_to_discard_following_buffer_by_remote_node_name(
+                remote_node_name=self.node.name, 
+                buffer_size = self._buffer_size[leaf_node.name])
+        for pos in positions_to_discard_in_leaf_manager:
+            leaf_protocol.memorymanager.remove_link(mem_pos=pos)
+            leaf_node.qmemory.pop(pos)
+        
+
 
     def _get_connectable_positions(self):
         """
@@ -472,13 +496,7 @@ class DataCollectProtocol(NodeProtocol):
             else:
                 qubit = leaf_protocol.node.qmemory.peek(pos)
             qubits.append(qubit[0])
-
-            #print(self._switch_protocol._buffer_size)
-            # if memorymanager._mem_pos2info != None:
-            #     positions_beyond_buffer = [pos for pos in memorymanager._mem_pos2info if pos > self._switch_protocol._buffer_size]
-            # for pos in positions_beyond_buffer:
-            #     memorymanager.remove_link(pos)
-
+        
         # apply correction operators
         for ix, qubit in enumerate(qubits):
             ns.qubits.qubitapi.operate(qubit, linkgroup.correction_operators[ix])
@@ -530,28 +548,31 @@ def setup_protocols(network, connect_size, num_positions,
     leaf_nodes = [n for n in network.subcomponents.values()
                   if isinstance(n, Node) and LEAF_NODE_BASENAME in n.name]
 
-    buffer_size_ = dict()
+    _buffer_size = dict()
     for i, leaf_node in enumerate(leaf_nodes):
-        buffer_size_[leaf_node.name] = \
+        _buffer_size[leaf_node.name] = \
             buffer_size[i] if type(buffer_size)==list else buffer_size
     protocol = Protocol()
-    switch_protocol = SwitchProtocol(node=switch_node,
-                                     name=SWITCH_PROTOCOL_NAME,
-                                     leaf_nodes=leaf_nodes,
-                                     buffer_size=sum(buffer_size) if type(buffer_size) == list else buffer_size * len(leaf_nodes),
-                                     connect_size=connect_size,
-                                     server_node_name=server_node_name)
-
-    protocol.add_subprotocol(switch_protocol)
 
     leaf_protocols = []
     for leaf_node in leaf_nodes:
         subprotocol = \
             LeafProtocol(node=leaf_node,
                          name=LEAF_PROTOCOL_BASENAME + leaf_node.name,
-                         buffer_size=buffer_size_[leaf_node.name])
+                         buffer_size=_buffer_size[leaf_node.name],
+                         switch_node=switch_node)
         leaf_protocols.append(subprotocol)
         protocol.add_subprotocol(subprotocol)
+
+    switch_protocol = SwitchProtocol(node=switch_node,
+                                    name=SWITCH_PROTOCOL_NAME,
+                                    leaf_nodes=leaf_nodes,
+                                    buffer_size=_buffer_size,
+                                    connect_size=connect_size,
+                                    server_node_name=server_node_name, 
+                                    leaf_protocols=leaf_protocols)
+
+    protocol.add_subprotocol(switch_protocol)
 
     data_collect_protocol = DataCollectProtocol(node=switch_node,
                                                 name=DATA_PROTOCOL_NAME,
