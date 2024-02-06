@@ -297,10 +297,11 @@ def convert_simulation_multiple_to_csv(simulation_multiple, csv_filename="data.c
     df.to_csv(path_or_buf=csv_filename)
 
 
-def simulate_scenarios_and_write_all_results_to_csv(scenarios, number_of_runs=1, csv_filename="data.csv"):
+def simulate_scenarios_and_write_all_results_to_csv(scenarios, distances, repetition_times,
+                                                    number_of_runs=1, csv_filename="data.csv"):
     df = pd.DataFrame()
     for scenario in scenarios:
-        simulation = Simulation(scenario=scenario)
+        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times,)
         sm = SimulationMultiple(simulation=simulation, number_of_runs=number_of_runs)
         sm.run()
         data = convert_simulation_multiple_to_dataframe(sm)
@@ -308,10 +309,11 @@ def simulate_scenarios_and_write_all_results_to_csv(scenarios, number_of_runs=1,
     df.to_csv(path_or_buf=csv_filename)
 
 
-def simulate_scenarios_and_aggregate_results_as_csv(scenarios, number_of_runs=1, csv_filename="data.csv"):
+def simulate_scenarios_and_aggregate_results_as_csv(scenarios, distances, repetition_times,
+                                                    number_of_runs=1, csv_filename="data.csv"):
     df = pd.DataFrame()
     for scenario in scenarios:
-        simulation = Simulation(scenario=scenario)
+        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times)
         sm = SimulationMultiple(simulation=simulation, number_of_runs=number_of_runs)
         sm.run()
 
@@ -328,10 +330,11 @@ def simulate_scenarios_and_aggregate_results_as_csv(scenarios, number_of_runs=1,
     df.to_csv(path_or_buf=csv_filename)
 
 
-def simulate_scenarios_and_aggregate_results_as_pickle(scenarios, number_of_runs=1, filename="data.pkl"):
+def simulate_scenarios_and_aggregate_results_as_pickle(scenarios, distances, repetition_times,
+                                                       number_of_runs=1, filename="data.pkl"):
     df = pd.DataFrame()
     for i, scenario in enumerate(scenarios):
-        simulation = Simulation(scenario=scenario)
+        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times)
         sm = SimulationMultiple(simulation=simulation, number_of_runs=number_of_runs)
         sm.run()
 

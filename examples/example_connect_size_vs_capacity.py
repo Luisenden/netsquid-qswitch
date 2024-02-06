@@ -14,17 +14,22 @@ def main(no_output=False):
     scenarios = [
         Scenario(total_runtime_in_seconds=100 * 10 ** (-6),
                  connect_size=connect_size,
-                 rates=[1 * 10 ** 6] * number_of_leaves,
                  num_positions=100,
                  buffer_size=np.inf,
                  decoherence_rate=0,
+                 eta=0.1,
+                 loss=1,
+                 server_node_name=None,
+                 bright_state_population=[0.3]*number_of_leaves,
                  T2=0,
                  include_classical_comm=False)
         for connect_size in connect_sizes]
 
     csv_filename = "data_connect_size_vs_capacity.csv"
 
-    simulate_scenarios_and_aggregate_results_as_csv(scenarios=scenarios, number_of_runs=10, csv_filename=csv_filename)
+    simulate_scenarios_and_aggregate_results_as_csv(scenarios=scenarios, distances=[2]*number_of_leaves,
+                                                    repetition_times=[10**-3]*number_of_leaves,
+                                                    number_of_runs=10, csv_filename=csv_filename)
 
     # PLOTTING
 
