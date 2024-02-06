@@ -324,20 +324,17 @@ class MemoryManager:
             if oldest is not None:
                 oldest_links.append(oldest)
         oldest_links.sort(key=MemoryManager._sort_by_OLEF)
-    
         if len(oldest_links) < number_of_qubits:
             return None
-        
-        if server_node_name == None:
+        if server_node_name is None:
             return [x[0] for x in oldest_links[0:number_of_qubits]]
-        
         node_names = [oldest_link[1].remote_node_name for oldest_link in oldest_links]
         if server_node_name in node_names:
             index_server = node_names.index(server_node_name)
             server_link = oldest_links[index_server]
-            positions = [server_link[0]] + [x[0] for i,x in enumerate(oldest_links) if i != index_server][:number_of_qubits-1]
+            positions = [server_link[0]] + [x[0] for i, x in enumerate(oldest_links)
+                                            if i != index_server][:number_of_qubits-1]
             return positions
-        
         return None
 
     def positions_to_discard_following_buffer_by_remote_node_name(self, remote_node_name, buffer_size):

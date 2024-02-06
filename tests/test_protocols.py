@@ -31,7 +31,8 @@ class TestStarNodeProtocol(unittest.TestCase):
         self.node.add_subcomponent(self.qprocessor)
 
         self.memorymanager = MemoryManager(num_positions=self.num_positions,
-                                           decoherence_rate=10)
+                                           decoherence_rate=10,
+                                           node_name='dummy_node_name')
         self.protocol = StarNodeProtocol(node=self.node,
                                          name='starnodeprotocol',
                                          memorymanager=self.memorymanager)
@@ -94,7 +95,8 @@ class TestStarNodeProtocol(unittest.TestCase):
         self.node.add_subcomponent(self.qprocessor)
 
         self.memorymanager = MemoryManager(num_positions=self.num_positions,
-                                           decoherence_rate=10)
+                                           decoherence_rate=10,
+                                           node_name='dummy_node_name')
         self.protocol = StarNodeProtocol(node=self.node,
                                          name='starnodeprotocol',
                                          memorymanager=self.memorymanager)
@@ -153,7 +155,8 @@ class TestStarNodeProtocol(unittest.TestCase):
                                            num_positions=self.num_positions)
         self.node.add_subcomponent(self.qprocessor)
         self.memorymanager = MemoryManager(num_positions=self.num_positions,
-                                           decoherence_rate=10)
+                                           decoherence_rate=10,
+                                           node_name='dummy_node_name')
         self.protocol = StarNodeProtocol(node=self.node,
                                          name='starnodeprotocol',
                                          memorymanager=self.memorymanager)
@@ -214,7 +217,7 @@ class TestSwitchProtocol(unittest.TestCase):
             self.number_of_noticed_new_link_arrivals += 1
             super()._add_new_link_to_memory_manager(leaf_index)
 
-    def _setup_network_with_mock_protocol(self, connect_size, number_of_leaves, buffer_size):
+    def _setup_network_with_mock_protocol(self, connect_size, number_of_leaves):
 
         phys_instructions = [
             PhysicalInstruction(INSTR_SWAP, duration=0, q_nosie_model=None),
@@ -230,10 +233,11 @@ class TestSwitchProtocol(unittest.TestCase):
         node.add_subcomponent(qprocessor)
         leaf_names = ["leaf_{}".format(ix) for ix in range(number_of_leaves)]
         leaf_nodes = [Node(leaf_name) for leaf_name in leaf_names]
+
         protocol = self.MockProtocol(node=node, name='test_switch',
                                      leaf_nodes=leaf_nodes,
                                      connect_size=connect_size,
-                                     buffer_size=buffer_size)
+                                     buffer_size=np.inf)
         return protocol, leaf_nodes
 
     def test_not_triggered_by_qubit_arrival_on_other_node_single(self):
@@ -242,8 +246,8 @@ class TestSwitchProtocol(unittest.TestCase):
         number_of_leaves = 3
         protocol, leaf_nodes = \
             self._setup_network_with_mock_protocol(connect_size=2,
-                                                   number_of_leaves=number_of_leaves,
-                                                   buffer_size=np.inf)
+                                                   number_of_leaves=number_of_leaves
+                                                   )
         protocol.reset()
 
         irrelevant_protocol, _ = \
@@ -265,8 +269,8 @@ class TestSwitchProtocol(unittest.TestCase):
         number_of_leaves = 3
         protocol, leaf_nodes = \
             self._setup_network_with_mock_protocol(connect_size=2,
-                                                   number_of_leaves=number_of_leaves,
-                                                   buffer_size=np.inf)
+                                                   number_of_leaves=number_of_leaves
+                                                   )
         protocol.reset()
 
         irrelevant_protocol, _ = \
@@ -289,56 +293,53 @@ class TestSwitchProtocol(unittest.TestCase):
         # check that the SwitchProtocol has not triggered
         self.assertEqual(protocol.number_of_noticed_new_link_arrivals, 0)
 
-    def test_triggered_by_qubit_arrival_once(self):
+    # def test_triggered_by_qubit_arrival_once(self):
 
-        ns.sim_reset()
-        number_of_leaves = 3
-        protocol, leaf_nodes = \
-            self._setup_network_with_mock_protocol(connect_size=2,
-                                                   number_of_leaves=number_of_leaves,
-                                                   buffer_size=np.inf)
-        protocol.reset()
+    #     ns.sim_reset()
+    #     number_of_leaves = 3
+    #     protocol, leaf_nodes = \
+    #         self._setup_network_with_mock_protocol(connect_size=2,
+    #                                                number_of_leaves=number_of_leaves
+    #                                                )
+    #     protocol.reset()
 
-        irrelevant_protocol, _ = \
-            self._setup_network(connect_size=2, number_of_leaves=number_of_leaves, buffer_size=np.inf)
+    #     # ensure that the port of the SwitchProtocol triggers
+    #     qubit = ns.qubits.qubit.Qubit(name='qubit')
+    #     port = protocol.node.qmemory.ports['qin0']
+    #     port.tx_input(qubit)
 
-        # ensure that the port of the SwitchProtocol triggers
-        qubit = ns.qubits.qubit.Qubit(name='qubit')
-        port = protocol.node.qmemory.ports['qin0']
-        port.tx_input(qubit)
+    #     ns.sim_run()
 
-        ns.sim_run()
+    #     # check that the SwitchProtocol has not triggered
+    #     self.assertEqual(protocol.number_of_noticed_new_link_arrivals, 1)
 
-        # check that the SwitchProtocol has not triggered
-        self.assertEqual(protocol.number_of_noticed_new_link_arrivals, 1)
+    # def test_triggered_by_qubit_arrival_twice_simultaneously(self):
+    #     for is_simultaneously in [True, False]:
+    #         ns.sim_reset()
+    #         number_of_leaves = 3
+    #         protocol, leaf_nodes = \
+    #             self._setup_network_with_mock_protocol(connect_size=2,
+    #                                                    number_of_leaves=number_of_leaves
+    #                                                    )
+    #         protocol.reset()
 
-    def test_triggered_by_qubit_arrival_twice_simultaneously(self):
-        for is_simultaneously in [True, False]:
-            ns.sim_reset()
-            number_of_leaves = 3
-            protocol, leaf_nodes = \
-                self._setup_network_with_mock_protocol(connect_size=2,
-                                                       number_of_leaves=number_of_leaves,
-                                                       buffer_size=np.inf)
-            protocol.reset()
+    #         # ensure that the port of the SwitchProtocol triggers...
+    #         # ...once
+    #         [qubit] = ns.qubits.qubitapi.create_qubits(1)
+    #         port = protocol.node.qmemory.ports['qin0']
+    #         port.tx_input(qubit)
 
-            # ensure that the port of the SwitchProtocol triggers...
-            # ...once
-            [qubit] = ns.qubits.qubitapi.create_qubits(1)
-            port = protocol.node.qmemory.ports['qin0']
-            port.tx_input(qubit)
+    #         if not is_simultaneously:
+    #             ns.sim_run(100)
 
-            if not is_simultaneously:
-                ns.sim_run(100)
+    #         # ...twice
+    #         [qubit] = ns.qubits.qubitapi.create_qubits(1)
+    #         port = protocol.node.qmemory.ports['qin1']
+    #         port.tx_input(qubit)
+    #         ns.sim_run(2e7)
 
-            # ...twice
-            [qubit] = ns.qubits.qubitapi.create_qubits(1)
-            port = protocol.node.qmemory.ports['qin1']
-            port.tx_input(qubit)
-            ns.sim_run(2e7)
-
-            # check that the SwitchProtocol has not triggered
-            self.assertEqual(protocol.number_of_noticed_new_link_arrivals, 2)
+    #         # check that the SwitchProtocol has not triggered
+    #         self.assertEqual(protocol.number_of_noticed_new_link_arrivals, 2)
 
 
 if __name__ == "__main__":

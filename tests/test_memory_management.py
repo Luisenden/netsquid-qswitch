@@ -7,7 +7,7 @@ class TestMemoryManager(unittest.TestCase):
 
     def setUp(self):
         ns.sim_reset()
-        self.mm = MemoryManager(num_positions=10)
+        self.mm = MemoryManager(num_positions=10, node_name='dummy_node_name')
 
     def test_add_fresh_link(self):
         # add a link

@@ -6,16 +6,19 @@ from netsquid_qswitch.runtools import Scenario, simulate_scenarios_and_aggregate
 
 def main(no_output=False):
     np.random.seed(42)
-    ratess = [[1.9 * 10 ** 6] * i for i in [5,10,20]]  # 5 and 10 nodes
-    buffer_sizess = [[[j]+[1]*(i-1) for i in [5,10,20]] for j in [2**i for i in range(11)]]  # buffer sizes of 1 and 1024 qubits
+    ratess = [[1.9 * 10 ** 6] * i for i in [5, 10, 20]]  # 5 and 10 nodes
+    buffer_sizess = [[[j]+[1]*(i-1) for i in [5, 10, 20]] for j in [2**i for i in range(11)]]
     scenarios = [Scenario(total_runtime_in_seconds=100 * 10 ** (-6), connect_size=5,
                           rates=rates, num_positions=1000,
-                          buffer_size=buffer_sizess[j][i], decoherence_rate=0,
+                          buffer_size=buffer_sizess[j][i],
+                          decoherence_rate=0,
                           T2=10 ** (-6),
-                          include_classical_comm=False) for j in range(len(buffer_sizess)) for i, rates in enumerate(ratess)]
-
+                          include_classical_comm=False)
+                 for j in range(len(buffer_sizess)) for i, rates in enumerate(ratess)]
     filename = 'diff_in_buffer_impact.pkl'
-    simulate_scenarios_and_aggregate_results_as_pickle(scenarios=scenarios, number_of_runs=5, filename=filename)
+    simulate_scenarios_and_aggregate_results_as_pickle(scenarios=scenarios,
+                                                       number_of_runs=5,
+                                                       filename=filename)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import numpy as np
 from netsquid.nodes import Connection
 from netsquid.components.models import FixedDelayModel
 from netsquid_qswitch.runtools import Scenario, Simulation
+from netsquid_qswitch.aux_functions import VARDOYAN_ATTEMPT_DURATION
 
 
 class TestSimulation(unittest.TestCase):
@@ -41,16 +42,19 @@ class TestSimulation(unittest.TestCase):
 
     def run_simulation(self, delay, number_of_leaves, connect_size,
                        total_runtime_in_nanoseconds, expected_number_of_produced_links):
-        dummy_number = 42 * 1e6
         scenario = Scenario(total_runtime_in_seconds=total_runtime_in_nanoseconds * 1e-9,
                             connect_size=connect_size,
-                            rates=[dummy_number] * number_of_leaves,
+                            server_node_name='leaf_node_0',
+                            bright_state_population=[0.4]*number_of_leaves,
+                            eta=0.1,
+                            loss=1,
                             num_positions=1000,
                             buffer_size=np.inf,
                             T2=0,
                             decoherence_rate=0,
                             include_classical_comm=False)
-        simulation = Simulation(scenario=scenario)
+        simulation = Simulation(scenario=scenario, distances=[2]*number_of_leaves,
+                                repetition_times=[VARDOYAN_ATTEMPT_DURATION]*number_of_leaves)
 
         self._convert_simulation_clocks_delay_model_to_fixed_delay(simulation=simulation, delay=delay)
         simulation.run()

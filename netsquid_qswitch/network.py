@@ -1,5 +1,4 @@
 """Physical components of the switch network and tools for setting them up."""
-import scipy.constants as ct
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
@@ -7,7 +6,6 @@ from netsquid.components.instructions import (
     INSTR_MEASURE, INSTR_MEASURE_X, INSTR_SWAP, INSTR_CNOT, INSTR_H,
     INSTR_MEASURE_BELL)
 from netsquid.components.models.qerrormodels import T1T2NoiseModel, DepolarNoiseModel
-from netsquid.components.models.delaymodels import FibreDelayModel
 from netsquid.components.models import DelayModel
 from netsquid.qubits.state_sampler import StateSampler
 
@@ -64,13 +62,13 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
     qchannel_M2leaf = QuantumChannel(
         name="qchannel_M2leaf{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
-        models={"delay_model": None, #
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.2)})
+        models={"delay_model": None,
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})
     qchannel_M2switch = QuantumChannel(
         name="qchannel_M2switch{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})  # FibreLossModel(p_loss_init=0., p_loss_length=0.00)})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})
 
     # classical_connection
     cchannel = ClassicalFibre("cchannel2leaf{}".format(leaf_node_name),

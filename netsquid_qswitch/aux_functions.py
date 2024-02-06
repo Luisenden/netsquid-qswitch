@@ -63,7 +63,7 @@ def rate_to_distance(rate, loss_parameter, loss_coefficient,
       * In Vardoyan et al., the rate is given in Mega-ebits per second,
         whereas this function returns units of Herz (1 ebit per second).
     """
-    return -10 * np.log(attempt_duration * rate / loss_parameter) /\
+    return -10 * np.log(attempt_duration * rate / loss_parameter / 2) /\
         (np.log(10) * loss_coefficient)
 
 
@@ -94,7 +94,7 @@ VARDOYAN_ATTEMPT_DURATION = 10 ** (-9)  # [s], called 'tau'
 VARDOYAN_LOSS_PARAMETER = 0.1  # called 'c' on p. 10 of paper
 
 
-def vardoyan_distance_to_rate(distance, attempt_duration):
+def vardoyan_distance_to_rate(distance):
     """Computes the entanglement generation rate over a given distance
     of glass fibre. Follows the numbers used by Vardoyan et al.,
     "On the stochastic analysis of quantum entanglement switch ",
@@ -118,7 +118,7 @@ def vardoyan_distance_to_rate(distance, attempt_duration):
     return distance_to_rate(distance=distance,
                             loss_parameter=VARDOYAN_LOSS_PARAMETER,
                             loss_coefficient=VARDOYAN_LOSS_COEFFICIENT,
-                            attempt_duration=attempt_duration)
+                            attempt_duration=VARDOYAN_ATTEMPT_DURATION)
 
 
 def vardoyan_rate_to_distance(rate):

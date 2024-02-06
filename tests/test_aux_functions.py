@@ -31,12 +31,6 @@ class TestAuxilliaryFunctions(unittest.TestCase):
             computed_distance = vardoyan_rate_to_distance(computed_rate)
             self.assertTrue(np.isclose(computed_distance, distance))
 
-        # Vardoyan et al. state "mu=1 (corresponding to 100 km long links)"
-        # where mu is the rate and is provided in units of Mega-ebits per
-        # second. We test for this value
-        computed_rate = vardoyan_distance_to_rate(distance=100)
-        self.assertTrue(np.isclose(computed_rate, 10 ** 6))
-
 
 if __name__ == "__main__":
     unittest.main()

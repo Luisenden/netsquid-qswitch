@@ -11,7 +11,6 @@ the buffer size of the switch is varied:
 >>> scenarios = [
 >>>     Scenario(total_runtime_in_seconds=100 * 10 ** (-6),
 >>>              connect_size=2,
->>>              rates=[1 * 10 ** 6] * number_of_leaves,
 >>>              num_positions=1000,
 >>>              buffer_size=buffer_size,
 >>>              decoherence_rate=0,
@@ -33,7 +32,7 @@ import netsquid as ns
 from netsquid.nodes import Connection, Node
 from netsquid.components import ClassicalFibre
 from netsquid.qubits import ketstates as ks
-from netsquid_qswitch.aux_functions import distance_to_rate, vardoyan_rate_to_distance
+from netsquid_qswitch.aux_functions import distance_to_rate
 from netsquid_qswitch.network import ExponentialDelayModel, setup_network
 from netsquid_qswitch.protocols import DATA_PROTOCOL_NAME, SWITCH_NODE_NAME, LEAF_NODE_BASENAME, setup_protocols
 
@@ -95,7 +94,7 @@ class Simulation:
         in `scenario`
     """
 
-    def __init__(self, scenario, distances="default", repetition_times=1 * 10 ** 9):
+    def __init__(self, scenario, distances, repetition_times):
 
         self._has_run = False
         ns.set_qstate_formalism(ns.QFormalism.KET)
@@ -136,11 +135,7 @@ class Simulation:
             leaf_port.forward_input(leaf_node.qmemory.ports["qin0"])
 
     def _set_distances(self, distances):
-        if distances == "default":
-            self._distances = [vardoyan_rate_to_distance(rate)
-                               for rate in self._scenario.rates]
-        else:
-            self._distances = distances
+        self._distances = distances
 
     def _set_repetition_times(self, repetition_times):
         if type(repetition_times) == int:
@@ -148,16 +143,15 @@ class Simulation:
         else:
             self._repetition_times = repetition_times
 
-
     def _get_network(self):
         number_of_leaves = len(self._distances)
 
-        rates = [alpha*distance_to_rate(distance=distance, loss_coefficient=self._scenario.eta, loss_parameter=self._scenario.loss, attempt_duration=T) 
-                 for alpha, T, distance in zip(self._scenario.bright_state_population, self._repetition_times, self._distances)]
+        rates = [alpha*distance_to_rate(distance=distance, loss_coefficient=self._scenario.eta,
+                                        loss_parameter=self._scenario.loss, attempt_duration=T)
+                 for alpha, T, distance in zip(self._scenario.bright_state_population,
+                                               self._repetition_times, self._distances)]
         timing_models = \
             [ExponentialDelayModel(rate=rate) for rate in rates]
-
-
 
         network = setup_network(
             number_of_leaves=number_of_leaves,

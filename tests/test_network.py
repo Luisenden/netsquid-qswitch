@@ -20,7 +20,8 @@ class TestSetupPhysicalInfrastructure(unittest.TestCase):
                                 single_hop_state=state,
                                 single_hop_timing_models=timing_models,
                                 num_positions=5,
-                                T2=3)
+                                T2=3,
+                                bright_state_population=[0.4]*3)
 
         self.assertIsInstance(network, Component)
         self.assertIsInstance(network.subcomponents[SWITCH_NODE_NAME], Node)
