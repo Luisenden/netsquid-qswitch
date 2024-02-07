@@ -63,12 +63,12 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
         name="qchannel_M2leaf{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/1.5, time_independent=True)})
     qchannel_M2switch = QuantumChannel(
         name="qchannel_M2switch{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/2, time_independent=True)})
+                "quantum_noise_model": DepolarNoiseModel(bright_state_population/1.5, time_independent=True)})
 
     # classical_connection
     cchannel = ClassicalFibre("cchannel2leaf{}".format(leaf_node_name),
