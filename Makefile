@@ -31,7 +31,7 @@ clean:
 	@/usr/bin/find . -name '*.pyc' -delete
 
 lint:
-	@$(PYTHON3) -m flake8 ${SOURCEDIR} ${TESTDIR} ${EXAMPLES}
+	@$(PYTHON3) -m flake8 --max-line-length=120 ${SOURCEDIR} ${TESTDIR} ${EXAMPLES}
 
 tests:
 	@$(PYTHON3) -m pytest --cov=${SOURCEDIR} --cov-fail-under=${MINCOV} tests
