@@ -94,10 +94,11 @@ class Simulation:
         in `scenario`
     """
 
-    def __init__(self, scenario, distances, repetition_times):
+    def __init__(self, scenario, distances, repetition_times, seed):
 
         self._has_run = False
         ns.set_qstate_formalism(ns.QFormalism.KET)
+        self._seed = seed
 
         self._scenario = scenario
         self._set_distances(distances=distances)
@@ -213,6 +214,7 @@ class Simulation:
             raise Exception('Simulation has run already')
         ns.sim_reset()
         self.reset()
+        ns.set_random_state(self._seed)
         self._start_all_clocks()
         ns.sim_run(self._scenario.total_runtime_in_seconds * 1e9)
         self._has_run = True
@@ -240,6 +242,7 @@ class SimulationMultiple:
     def run(self):
         for __ in range(self._number_of_runs):
             self._simulation.reset()
+            self._simulation._seed += 1
             self._simulation.run()
             self._results.append(self._simulation.result)
 

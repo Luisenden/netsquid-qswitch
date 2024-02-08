@@ -1,4 +1,5 @@
 """Physical components of the switch network and tools for setting them up."""
+import netsquid as ns
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
@@ -187,6 +188,7 @@ class ExponentialDelayModel(DelayModel):
             raise ValueError("Rate parameter of exponential" +
                              "distribution should be strictly positive")
         self._rate = rate * 10 ** (-9)
+        ns.util.simtools.set_random_state(42)
 
     def get_mean(self, **kwargs):
         return 1. / self._rate
