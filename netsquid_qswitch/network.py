@@ -1,5 +1,6 @@
 """Physical components of the switch network and tools for setting them up."""
 import netsquid as ns
+import numpy as np
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
@@ -64,12 +65,12 @@ def _create_qconnection(leaf_node_name, distance_from_centre, single_hop_state,
         name="qchannel_M2leaf{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/1.5, time_independent=True)})
+                "quantum_noise_model": DepolarNoiseModel(4/3*bright_state_population, time_independent=True)})
     qchannel_M2switch = QuantumChannel(
         name="qchannel_M2switch{}".format(leaf_node_name),
         length=distance_from_centre / 2.,
         models={"delay_model": None,
-                "quantum_noise_model": DepolarNoiseModel(bright_state_population/1.5, time_independent=True)})
+                "quantum_noise_model": None})
 
     # classical_connection
     cchannel = ClassicalFibre("cchannel2leaf{}".format(leaf_node_name),
@@ -117,7 +118,7 @@ def _create_quantumprocessor(name, num_positions, T2):
     qprocessor = QuantumProcessor(name=name,
                                   num_positions=num_positions,
                                   fallback_to_nonphysical=False,
-                                  mem_noise_models=[T1T2NoiseModel(T2=T2)] * num_positions,
+                                  mem_noise_models=[None] * num_positions, #T1T2NoiseModel(T2=T2)
                                   phys_instructions=physical_instructions)
     return qprocessor
 

@@ -294,8 +294,8 @@ class MemoryManager:
         """
         Check whether a `Connect` operation is possible, where the
         number of qubits that the `Connect` operation acts upon is
-        given by `number_of_qubits`. Specifying a server_node yields a group of oldest links
-        only if the server_node_name is among them.
+        given by `number_of_qubits`. Specifying a server_node returns the group of oldest links
+        where server_node_name is part of.
 
         Parameters
         ----------
@@ -328,6 +328,7 @@ class MemoryManager:
             return None
         if server_node_name is None:
             return [x[0] for x in oldest_links[0:number_of_qubits]]
+        
         node_names = [oldest_link[1].remote_node_name for oldest_link in oldest_links]
         if server_node_name in node_names:
             index_server = node_names.index(server_node_name)

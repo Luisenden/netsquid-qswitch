@@ -29,7 +29,7 @@ def distance_to_rate(distance, loss_parameter, loss_coefficient,
     float
         Entanglement generation rate [1/s]
     """
-    transmissivity = 10 ** (-0.1 * loss_coefficient * distance)
+    transmissivity = 10 ** (-0.1 * loss_coefficient * distance/2) # transmissivity between one end of the link and midpoint station
     # transmissivity is the 'eta' in vardoyan et al.
     return (2 * loss_parameter * transmissivity) / attempt_duration
 

@@ -33,6 +33,7 @@ from netsquid.nodes import Connection, Node
 from netsquid.components import ClassicalFibre
 from netsquid.qubits import ketstates as ks
 from netsquid_qswitch.aux_functions import distance_to_rate
+from netsquid.components.models.delaymodels import FixedDelayModel
 from netsquid_qswitch.network import ExponentialDelayModel, setup_network
 from netsquid_qswitch.protocols import DATA_PROTOCOL_NAME, SWITCH_NODE_NAME, LEAF_NODE_BASENAME, setup_protocols
 
@@ -97,7 +98,7 @@ class Simulation:
     def __init__(self, scenario, distances, repetition_times, seed):
 
         self._has_run = False
-        ns.set_qstate_formalism(ns.QFormalism.KET)
+        ns.set_qstate_formalism(ns.QFormalism.DM)
         self._seed = seed
 
         self._scenario = scenario
@@ -152,7 +153,7 @@ class Simulation:
                  for alpha, T, distance in zip(self._scenario.bright_state_population,
                                                self._repetition_times, self._distances)]
         timing_models = \
-            [ExponentialDelayModel(rate=rate) for rate in rates]
+            [ExponentialDelayModel(rate) for rate in rates] #Exponential! FixedDelayModel(delay=1/rate * 10**9)
 
         network = setup_network(
             number_of_leaves=number_of_leaves,
