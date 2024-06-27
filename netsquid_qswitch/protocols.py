@@ -1,7 +1,6 @@
 """Protocols for both the center node (switch node) and the leaf nodes in a star-shaped network."""
 import abc
 import netsquid as ns
-from netsquid.qubits import ketstates as ks
 from netsquid.components import Port
 from netsquid.nodes import Node
 from netsquid.protocols import NodeProtocol, Protocol
@@ -486,8 +485,6 @@ class DataCollectProtocol(NodeProtocol):
         # apply correction operators
         for ix, qubit in enumerate(qubits):
             ns.qubits.qubitapi.operate(qubit, linkgroup.correction_operators[ix])
-        
-        fidel_comp = [ns.qubits.qubitapi.fidelity(qubits, ks.bell_states[i], squared=True) for i in range(3)]
         return ns.qubits.qubitapi.fidelity(qubits, self._ghz_state, squared=True), nodes_involved
 
     def _collect_fidelity_and_nodes_involved(self, event):
@@ -539,9 +536,8 @@ def setup_protocols(network, connect_size, num_positions,
     _buffer_size = dict()
     for i, leaf_node in enumerate(leaf_nodes):
         _buffer_size[leaf_node.name] = \
-            buffer_size[i] if type(buffer_size) == list else buffer_size
+            buffer_size[i] if isinstance(buffer_size, list) else buffer_size
     protocol = Protocol()
-
     leaf_protocols = []
     for leaf_node in leaf_nodes:
         subprotocol = \

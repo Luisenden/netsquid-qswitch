@@ -1,13 +1,12 @@
 """Physical components of the switch network and tools for setting them up."""
 import netsquid as ns
-import numpy as np
 from netsquid.nodes import Connection, Node
 from netsquid.components import (PhysicalInstruction, Component, QSource, SourceStatus, QuantumChannel,
                                  QuantumProcessor, Clock, ClassicalFibre)
 from netsquid.components.instructions import (
     INSTR_MEASURE, INSTR_MEASURE_X, INSTR_SWAP, INSTR_CNOT, INSTR_H,
     INSTR_MEASURE_BELL)
-from netsquid.components.models.qerrormodels import T1T2NoiseModel, DepolarNoiseModel
+from netsquid.components.models.qerrormodels import DepolarNoiseModel
 from netsquid.components.models import DelayModel
 from netsquid.qubits.state_sampler import StateSampler
 
@@ -118,7 +117,7 @@ def _create_quantumprocessor(name, num_positions, T2):
     qprocessor = QuantumProcessor(name=name,
                                   num_positions=num_positions,
                                   fallback_to_nonphysical=False,
-                                  mem_noise_models=[None] * num_positions, #T1T2NoiseModel(T2=T2)
+                                  mem_noise_models=[None] * num_positions,
                                   phys_instructions=physical_instructions)
     return qprocessor
 

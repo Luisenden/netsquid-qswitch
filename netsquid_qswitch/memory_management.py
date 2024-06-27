@@ -328,7 +328,6 @@ class MemoryManager:
             return None
         if server_node_name is None:
             return [x[0] for x in oldest_links[0:number_of_qubits]]
-        
         node_names = [oldest_link[1].remote_node_name for oldest_link in oldest_links]
         if server_node_name in node_names:
             index_server = node_names.index(server_node_name)

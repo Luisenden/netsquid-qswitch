@@ -54,7 +54,7 @@ class TestSimulation(unittest.TestCase):
                             decoherence_rate=0,
                             include_classical_comm=False)
         simulation = Simulation(scenario=scenario, distances=[2]*number_of_leaves,
-                                repetition_times=[VARDOYAN_ATTEMPT_DURATION]*number_of_leaves)
+                                repetition_times=[VARDOYAN_ATTEMPT_DURATION]*number_of_leaves, seed=42)
 
         self._convert_simulation_clocks_delay_model_to_fixed_delay(simulation=simulation, delay=delay)
         simulation.run()

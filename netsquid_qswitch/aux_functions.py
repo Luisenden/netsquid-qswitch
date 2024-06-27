@@ -29,8 +29,8 @@ def distance_to_rate(distance, loss_parameter, loss_coefficient,
     float
         Entanglement generation rate [1/s]
     """
-    transmissivity = 10 ** (-0.1 * loss_coefficient * distance/2) # transmissivity between one end of the link and midpoint station
-    # transmissivity is the 'eta' in vardoyan et al.
+    # transmissivity between one end of the link and midpoint station
+    transmissivity = 10 ** (-0.1 * loss_coefficient * distance/2)
     return (2 * loss_parameter * transmissivity) / attempt_duration
 
 
@@ -64,7 +64,7 @@ def rate_to_distance(rate, loss_parameter, loss_coefficient,
         whereas this function returns units of Herz (1 ebit per second).
     """
     return -10 * np.log(attempt_duration * rate / loss_parameter / 2) /\
-        (np.log(10) * loss_coefficient)
+        (np.log(10) * loss_coefficient / 2)
 
 
 def get_ghz_state(number_of_qubits):

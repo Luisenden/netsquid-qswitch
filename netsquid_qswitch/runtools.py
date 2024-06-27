@@ -33,7 +33,6 @@ from netsquid.nodes import Connection, Node
 from netsquid.components import ClassicalFibre
 from netsquid.qubits import ketstates as ks
 from netsquid_qswitch.aux_functions import distance_to_rate
-from netsquid.components.models.delaymodels import FixedDelayModel
 from netsquid_qswitch.network import ExponentialDelayModel, setup_network
 from netsquid_qswitch.protocols import DATA_PROTOCOL_NAME, SWITCH_NODE_NAME, LEAF_NODE_BASENAME, setup_protocols
 
@@ -140,7 +139,7 @@ class Simulation:
         self._distances = distances
 
     def _set_repetition_times(self, repetition_times):
-        if type(repetition_times) == int:
+        if isinstance(repetition_times, int):
             self._repetition_times = repetition_times * len(self._distances)
         else:
             self._repetition_times = repetition_times
@@ -153,7 +152,7 @@ class Simulation:
                  for alpha, T, distance in zip(self._scenario.bright_state_population,
                                                self._repetition_times, self._distances)]
         timing_models = \
-            [ExponentialDelayModel(rate) for rate in rates] #Exponential! FixedDelayModel(delay=1/rate * 10**9)
+            [ExponentialDelayModel(rate) for rate in rates]
 
         network = setup_network(
             number_of_leaves=number_of_leaves,
@@ -305,7 +304,7 @@ def simulate_scenarios_and_write_all_results_to_csv(scenarios, distances, repeti
                                                     number_of_runs=1, csv_filename="data.csv"):
     df = pd.DataFrame()
     for scenario in scenarios:
-        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times,)
+        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times, seed=42)
         sm = SimulationMultiple(simulation=simulation, number_of_runs=number_of_runs)
         sm.run()
         data = convert_simulation_multiple_to_dataframe(sm)
@@ -317,7 +316,7 @@ def simulate_scenarios_and_aggregate_results_as_csv(scenarios, distances, repeti
                                                     number_of_runs=1, csv_filename="data.csv"):
     df = pd.DataFrame()
     for scenario in scenarios:
-        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times)
+        simulation = Simulation(scenario=scenario, distances=distances, repetition_times=repetition_times, seed=42)
         sm = SimulationMultiple(simulation=simulation, number_of_runs=number_of_runs)
         sm.run()
 
