@@ -1,0 +1,4 @@
+,total_runtime_in_seconds,connect_size,num_positions,buffer_size,T2,decoherence_rate,include_classical_comm,mean_fidelity,mean_capacity,std_fidelity,std_capacity
+0,9.999999999999999e-05,2.0,100.0,inf,1e-07,0.0,0.0,,0.0,,0.0
+1,9.999999999999999e-05,2.0,100.0,inf,4.9999999999999996e-06,0.0,0.0,,0.0,,0.0
+2,9.999999999999999e-05,2.0,100.0,inf,1e-05,0.0,0.0,,0.0,,0.0
