@@ -14,8 +14,6 @@ CHANGELOG
 - added option to define buffer size individually per node 
 - included extraction of leaf nodes involved in produced GHZ states
 - added function `simulate_scenarios_and_aggregate_results_as_pickle` to runtools
-- added `example_capacity_vs_buffersize.py` to examples
-- added `plot_impacts_capacity_vs_buffer.py` to examples
 
 2020-12-18 (1.0.1)
 ------------------
